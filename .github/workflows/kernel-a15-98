@@ -1,0 +1,25 @@
+name: Kernel A15 6.6 (Single Build)
+
+on:
+  workflow_call:
+    inputs:
+      ksu_variant:
+        required: true
+        type: string
+
+      require_susfs:
+        required: true
+        type: boolean
+
+jobs:
+  build-a15-6-6:
+    name: Android 15 • Kernel 6.6.98
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      android_version: android15
+      kernel_version: "6.6"
+      sub_level: "98"
+      os_patch_level: "2025-10"
+      ksu_variant: ${{ inputs.ksu_variant }}
+      require_susfs: ${{ inputs.require_susfs }}
