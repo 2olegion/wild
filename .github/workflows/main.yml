@@ -1,157 +1,22 @@
-name: Build Kernels
-
-permissions:
-  contents: write
-  actions: write
+name: Build Kernel 6.6 (A15)
 
 on:
   workflow_dispatch:
-    inputs:
-      release_type:
-        description: "Release Type"
-        type: choice
-        options: [ Actions, Pre-Release, Release ]
-        default: Actions
-
-      ksu_variant:
-        description: "KernelSU Variant"
-        type: choice
-        options: [ KSU, WKSU, Next ]
-        default: Next
-
-      ksu_commit:
-        description: "KSU Commit (optional)"
-        type: string
-        required: false
-
-      # Build Selection
-      build_a15_6_6:
-        description: "Android 15 - 6.6"
-        type: boolean
-        default: true
-
-      build_custom:
-        description: "Custom Builds"
-        type: boolean
-        default: true
 
 jobs:
-  # --------------------------------------------------
-  # Android 15 / 6.6
-  # --------------------------------------------------
-  build-a15-6-6:
-    if: inputs.build_a15_6_6
-    uses: ./.github/workflows/kernel-a15-6-6.yml
-    secrets: inherit
-    with:
-      ksu_variant: ${{ inputs.ksu_variant }}
-      ksu_commit: ${{ inputs.ksu_commit }}
-
-  # --------------------------------------------------
-  # Custom
-  # --------------------------------------------------
-  build-custom:
-    if: inputs.build_custom
-    uses: ./.github/workflows/kernel-custom.yml
-    secrets: inherit
-    with:
-      ksu_variant: ${{ inputs.ksu_variant }}
-      ksu_commit: ${{ inputs.ksu_commit }}
-
-  # --------------------------------------------------
-  # Reject Summary
-  # --------------------------------------------------
-  combined-reject-summary:
-    name: Combined Reject Summary
+  build-6-6:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
-    needs:
-      - build-a15-6-6
-      - build-custom
 
     steps:
-      - name: Free disk space
-        run: |
-          curl -Ls https://raw.githubusercontent.com/apache/arrow/main/ci/scripts/util_free_space.sh | bash
-
-      - name: Download reject artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./downloaded-rejects
-          pattern: '*-Normal-Misc'
-
-      - name: Generate combined reject summary
-        run: |
-          set -e
-          ROOT="./downloaded-rejects"
-          OUT="Combined-Rejects"
-          mkdir -p "$OUT"
-
-          shopt -s nullglob
-          for d in "$ROOT"/*; do
-            [ -d "$d/patch-rejects" ] || continue
-            name=$(basename "$d" | sed 's/-Misc//')
-            mkdir -p "$OUT/$name"
-            cp -r "$d/patch-rejects/." "$OUT/$name/" || true
-          done
-
-      - name: Upload combined rejects
-        uses: actions/upload-artifact@v4
-        with:
-          name: Rejects-AIO
-          path: Combined-Rejects/
-          if-no-files-found: ignore
-          compression-level: 9
-
-  # --------------------------------------------------
-  # Release
-  # --------------------------------------------------
-  release:
-    runs-on: ubuntu-latest
-    if: inputs.release_type != 'Actions'
-    needs:
-      - build-a15-6-6
-      - build-custom
-
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RELEASE_NAME: "GKI Kernels 6.6 + Custom (KernelSU / SUSFS)"
-      RELEASE_BODY: ""
-
-    steps:
-      - name: Free disk space
-        run: |
-          curl -Ls https://raw.githubusercontent.com/apache/arrow/main/ci/scripts/util_free_space.sh | bash
-
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate new tag
+      - name: Free space
         run: |
-          LAST=$(gh api repos/${{ github.repository }}/tags --jq '.[0].name' 2>/dev/null || echo "v0")
-          NEXT=$(echo "$LAST" | awk -F'-r' '{n=$2+1; printf "%s-r%d", $1, n}')
-          echo "NEW_TAG=$NEXT" >> $GITHUB_ENV
+          curl -Ls https://raw.githubusercontent.com/apache/arrow/main/ci/scripts/util_free_space.sh | bash
 
-      - name: Create release
-        uses: softprops/action-gh-release@v2
+      - name: Build Android 15 / 6.6
+        uses: ./.github/workflows/kernel-a15-6-6.yml
+        secrets: inherit
         with:
-          tag_name: ${{ env.NEW_TAG }}
-          prerelease: ${{ inputs.release_type == 'Pre-Release' }}
-          name: ${{ env.RELEASE_NAME }}
-          body: |
-            Kernel 6.6 + Custom Builds  
-            KernelSU Variant: ${{ inputs.ksu_variant }}
-
-      - name: Download AnyKernel3 artifacts
-        uses: actions/download-artifact@v5
-        with:
-          path: ./artifacts
-          pattern: '*-AnyKernel3'
-
-      - name: Upload release assets
-        run: |
-          shopt -s nullglob
-          for d in artifacts/*; do
-            zip -r -9 "${d##*/}.zip" "$d"
-            gh release upload "$NEW_TAG" "${d##*/}.zip" --clobber
-          done
+          ksu_variant: Next
