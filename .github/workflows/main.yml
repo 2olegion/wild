@@ -17,6 +17,4 @@ jobs:
 
       - name: Build Android 15 / 6.6
         uses: ./.github/workflows/kernel-a15-6-6.yml
-        secrets: inherit
-        with:
-          ksu_variant: Next
+
