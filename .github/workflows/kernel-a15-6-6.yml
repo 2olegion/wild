@@ -1,8 +1,4 @@
-name: Kernel Config - A15 6.6
-
-permissions:
-  contents: write # Allow writing to repository contents
-  actions: write # Allows triggering actions
+name: Kernel A15 6.6
 
 on:
   workflow_call:
@@ -10,9 +6,11 @@ on:
       ksu_variant:
         required: true
         type: string
-      ksu_commit:
-        required: false
-        type: string
+
+      require_susfs:
+        required: true
+        type: boolean
+
 
 jobs:
   build-kernels-a15:
