@@ -1,32 +1,33 @@
-name: Kernel Build Process
-permissions:
-  contents: write
-  actions: write
-
 on:
   workflow_call:
     inputs:
       android_version:
         required: true
         type: string
+
       kernel_version:
         required: true
         type: string
+
       sub_level:
         required: true
         type: string
+
       os_patch_level:
         required: true
         type: string
-      variant:
-        required: false
-        type: string
+
       ksu_variant:
         required: true
         type: string
+
       ksu_commit:
         required: false
         type: string
+
+      require_susfs:
+        required: true
+        type: boolean
 
 jobs:
   build-gki:
