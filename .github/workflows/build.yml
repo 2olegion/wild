@@ -483,16 +483,18 @@ jobs:
           # deine bestehenden Kernel-Configs
           # (bleibt unverändert)
           
-          - name: Force enable SUSFS core (FINAL)
-          working-directory: ${{ env.KERNEL_ROOT }}
-          run: |
-           set -e
-           DEFCONFIG="common/arch/arm64/configs/gki_defconfig"
-           echo "==> Forcing SUSFS core into gki_defconfig"
+      - name: Force enable SUSFS core (FINAL)
+        working-directory: ${{ env.KERNEL_ROOT }}
+        run: |
+          set -e
+
+          DEFCONFIG="common/arch/arm64/configs/gki_defconfig"
+
+          echo "==> Forcing SUSFS core into gki_defconfig"
 
           # Remove old entries if present
           sed -i '/^CONFIG_SUSFS/d' "$DEFCONFIG"
-      
+
           # Add SUSFS core
           cat >> "$DEFCONFIG" << 'EOF'
           CONFIG_SUSFS=y
@@ -503,12 +505,12 @@ jobs:
           EOF
 
           echo "==> Verifying SUSFS in gki_defconfig"
-          grep -q CONFIG_SUSFS=y "$DEFCONFIG" || {
+          grep -q '^CONFIG_SUSFS=y' "$DEFCONFIG" || {
             echo "❌ CONFIG_SUSFS missing in gki_defconfig – aborting build"
             exit 1
-            }
+          }
 
-          grep CONFIG_SUSFS "$DEFCONFIG"
+          grep '^CONFIG_SUSFS' "$DEFCONFIG"
         
       - name: Configure Audio Modules
         if: inputs.variant == 'Hakan'
