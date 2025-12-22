@@ -476,23 +476,35 @@ jobs:
           else
             sed -i 's/check_defconfig//' ./common/build.config.gki
           fi
+          
+      - name: Configure Kernel Options
+        working-directory: ${{ env.KERNEL_ROOT }}
+        run: |
+          # deine bestehenden Kernel-Configs
+          # (bleibt unverändert)
 
-          - name: Configure Kernel Options
-          run: |
-            # deine bestehenden Kernel-Configs
-        
-          - name: Force enable SUSFS core (FINAL)   # ← HIER
-          run: |
-            scripts/config --enable CONFIG_SUSFS
-            scripts/config --enable CONFIG_SUSFS_PROC
-            scripts/config --enable CONFIG_SUSFS_MAGIC_MOUNT
-            scripts/config --enable CONFIG_SUSFS_AUTO_BIND
-            scripts/config --enable CONFIG_SUSFS_SUS_PATH
-            yes "" | make olddefconfig
-            grep -q CONFIG_SUSFS=y .config || exit 1
-        
-          - name: Configure Audio Modules
-          if: ...
+      - name: Force enable SUSFS core (FINAL)
+        working-directory: ${{ env.KERNEL_ROOT }}/common
+        run: |
+          set -e
+
+          echo "==> Enabling SUSFS core kernel features"
+
+          scripts/config --enable CONFIG_SUSFS
+          scripts/config --enable CONFIG_SUSFS_PROC
+          scripts/config --enable CONFIG_SUSFS_MAGIC_MOUNT
+          scripts/config --enable CONFIG_SUSFS_AUTO_BIND
+          scripts/config --enable CONFIG_SUSFS_SUS_PATH
+
+          yes "" | make olddefconfig
+
+          echo "==> Verifying SUSFS config"
+          grep -q CONFIG_SUSFS=y .config || {
+            echo "❌ SUSFS NOT ENABLED – aborting build"
+            exit 1
+          }
+
+          grep SUSFS .config || true
         
       - name: Configure Audio Modules
         if: inputs.variant == 'Hakan'
