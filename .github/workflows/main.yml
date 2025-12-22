@@ -1,5 +1,9 @@
 name: Build Kernel (Android 15 • 6.6)
 
+permissions:
+  contents: write
+  actions: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -20,5 +24,4 @@ jobs:
     with:
       ksu_variant: ${{ inputs.ksu_variant }}
       require_susfs: ${{ inputs.require_susfs }}
-
 
