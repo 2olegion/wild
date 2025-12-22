@@ -498,13 +498,13 @@ jobs:
 
           yes "" | make olddefconfig
 
-          echo "==> Verifying SUSFS config"
-          grep -q CONFIG_SUSFS=y .config || {
-            echo "❌ SUSFS NOT ENABLED – aborting build"
-            exit 1
+          echo "==> Verifying SUSFS in defconfig"
+          
+          grep -q CONFIG_SUSFS=y arch/arm64/configs/gki_defconfig || {
+          echo "❌ CONFIG_SUSFS missing in gki_defconfig – aborting build"
+          exit 1
           }
-
-          grep SUSFS .config || true
+          grep CONFIG_SUSFS arch/arm64/configs/gki_defconfig || true
         
       - name: Configure Audio Modules
         if: inputs.variant == 'Hakan'
