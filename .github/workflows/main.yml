@@ -18,19 +18,8 @@ on:
         default: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Free space
-        run: |
-          curl -Ls https://raw.githubusercontent.com/apache/arrow/main/ci/scripts/util_free_space.sh | bash
-
-      - name: Build Android 15 / 6.6 Kernel
-        uses: ./.github/workflows/kernel-a15-6-6.yml
-        with:
-          ksu_variant: ${{ inputs.ksu_variant }}
-          require_susfs: ${{ inputs.require_susfs }}
+  build-6-6:
+    uses: ./.github/workflows/kernel-a15-6-6.yml
+    with:
+      ksu_variant: ${{ inputs.ksu_variant }}
+      require_susfs: ${{ inputs.require_susfs }}
