@@ -1,16 +1,16 @@
 name: Build Kernel (Android 15 • 6.6)
 
+permissions:
+  contents: write
+  actions: write
+
 on:
   workflow_dispatch:
     inputs:
       ksu_variant:
         description: "KernelSU Variante"
         type: choice
-        options:
-          - KSU
-          - Next
-          - WildKSU
-          - SukiSU
+        options: [ KSU, Next, WildKSU, SukiSU ]
         default: Next
       require_susfs:
         description: "Enable SUSFS"
@@ -23,3 +23,4 @@ jobs:
     with:
       ksu_variant: ${{ inputs.ksu_variant }}
       require_susfs: ${{ inputs.require_susfs }}
+
