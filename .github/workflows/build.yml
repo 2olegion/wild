@@ -101,8 +101,8 @@ jobs:
         if [ ! -z "$BOOT_SIGN_KEY" ]; then
           echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
         fi
-        - name: Install repo tool
-        run: |
+    - name: Install repo tool
+      run: |
           set -e
           mkdir -p git-repo
           curl -s https://storage.googleapis.com/git-repo-downloads/repo > git-repo/repo
