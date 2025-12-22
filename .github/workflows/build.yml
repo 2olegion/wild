@@ -125,11 +125,7 @@ jobs:
           echo "CONFIG=$CONFIG" >> "$GITHUB_ENV"
           echo "Using CONFIG=$CONFIG"
 
-      - name: Setup ccache
-        run: |
-          ccache --max-size=2G
-          echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
-
+     
       - name: Clone AnyKernel3 and Other Dependencies
         run: |
           ANYKERNEL_BRANCH="gki-2.0"
