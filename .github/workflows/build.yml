@@ -183,13 +183,19 @@ jobs:
 
           $REPO --trace sync -j$(nproc --all) --fail-fast
 
-      - name: Extract Sublevel and Set File Name
-        run: |
-          ACTUAL_SUBLEVEL="${{ inputs.sub_level }}"
-          if [ -f "$KERNEL_ROOT/common/Makefile" ]; then
-            EXTRACTED=$(grep '^SUBLEVEL = ' "$KERNEL_ROOT/common/Makefile" | awk '{print $3}')
-            [ -n "$EXTRACTED" ] && ACTUAL_SUBLEVEL="$EXTRACTED"
-          fi
+          - name: Cache kernel source
+            uses: actions/cache@v4
+            with:
+              path: ${{ env.KERNEL_ROOT }}
+              key: kernel-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
+
+           - name: Extract Sublevel and Set File Name
+              run: |
+              ACTUAL_SUBLEVEL="${{ inputs.sub_level }}"
+              if [ -f "$KERNEL_ROOT/common/Makefile" ]; then
+                EXTRACTED=$(grep '^SUBLEVEL = ' "$KERNEL_ROOT/common/Makefile" | awk '{print $3}')
+                [ -n "$EXTRACTED" ] && ACTUAL_SUBLEVEL="$EXTRACTED"
+              fi
 
           ARTIFACT_BASE="${{ inputs.kernel_version }}.$ACTUAL_SUBLEVEL-${{ inputs.android_version }}-${{ inputs.os_patch_level }}-${{ matrix.build_type }}"
           echo "ACTUAL_SUBLEVEL=$ACTUAL_SUBLEVEL" >> $GITHUB_ENV
