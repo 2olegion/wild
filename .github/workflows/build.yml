@@ -305,7 +305,8 @@ jobs:
         working-directory: ${{ env.KERNEL_ROOT }}/common
         run: |
           set -e
-          patch -p1 < "$KERNEL_PATCHES/susfs_debug_init.patch"
+          patch -p1 < "$GITHUB_WORKSPACE/susfs_debug_init.patch"
+
       # --------------------------------------------------
       # SUSFS FIX PATCHES (OPTIONAL / SAFE)
       # --------------------------------------------------
