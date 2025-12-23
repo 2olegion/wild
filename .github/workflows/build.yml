@@ -165,7 +165,7 @@ jobs:
               ;;
           esac
 
-      # 1️⃣ Cache zuerst prüfen
+      # Cache zuerst prüfen
       - name: Restore kernel source cache
         id: kernel-cache
         uses: actions/cache@v4
@@ -173,7 +173,7 @@ jobs:
           path: ${{ env.KERNEL_ROOT }}
           key: kernel-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
       
-      # 2️⃣ Nur wenn Cache NICHT da ist → repo init + sync
+      # Nur wenn Cache NICHT da ist → repo init + sync
       - name: Initialize and Sync Kernel Source
         if: steps.kernel-cache.outputs.cache-hit != 'true'
         working-directory: ${{ env.KERNEL_ROOT }}
@@ -919,5 +919,6 @@ jobs:
             build_summary.md
           if-no-files-found: ignore
           compression-level: 9
+          overwrite: true
 
 # End of workflow
