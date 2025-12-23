@@ -1,4 +1,4 @@
-name: Kernel Build Process
+name: diff new
 permissions:
   contents: write
   actions: write
