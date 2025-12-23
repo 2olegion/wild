@@ -10,3 +10,4 @@ diff --git a/fs/namei.c b/fs/namei.c
 +	pr_info("SUSFS_DEBUG: do_mount() reached\n");
 +#endif
  	int ret;
+
