@@ -2,11 +2,14 @@ diff --git a/fs/namei.c b/fs/namei.c
 index 0000000..0000000 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -30,6 +30,10 @@
- #include <linux/path.h>
- #include <linux/namei.h>
+@@ -4000,6 +4005,10 @@ int do_mount(const char *dev_name, const char *dir_name,
+        if (!capable(CAP_SYS_ADMIN))
+                return -EPERM;
 
 +#ifdef CONFIG_SUSFS
-+pr_info("SUSFS_DEBUG: fs/namei.c loaded\n");
++       pr_info("SUSFS_DEBUG: do_mount() reached\n");
 +#endif
 +
+        if (flags & MS_REMOUNT)
+                return do_remount(dev_name, dir_name, flags, data_page);
+
