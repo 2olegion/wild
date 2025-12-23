@@ -304,6 +304,13 @@ jobs:
       # --------------------------------------------------
       # SUSFS FIX PATCHES (OPTIONAL / SAFE)
       # --------------------------------------------------
+      
+      - name: Apply SUSFS debug init (EXPERIMENTAL)
+        working-directory: ${{ env.KERNEL_ROOT }}/common
+        run: |
+          set -e
+          patch -p1 < "$KERNEL_PATCHES/experimental/susfs_debug_init.patch"
+      
       - name: Apply SUSFS fix patches (REQUIRED)
         working-directory: ${{ env.KERNEL_ROOT }}/common
         run: |
