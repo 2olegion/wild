@@ -1,15 +1,12 @@
-diff --git a/fs/susfs/susfs.c b/fs/susfs/susfs.c
-index 1234567..89abcde 100644
---- a/fs/susfs/susfs.c
-+++ b/fs/susfs/susfs.c
-@@ -20,6 +20,10 @@
- #include <linux/init.h>
- #include <linux/printk.h>
+diff --git a/fs/namei.c b/fs/namei.c
+index 0000000..0000000 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -50,6 +50,10 @@
+ #include <linux/fs.h>
+ #include <linux/namei.h>
 
-+static int __init susfs_debug_init(void)
-+{
-+    pr_info("SUSFS_DEBUG: susfs_debug_init reached\n");
-+    return 0;
-+}
-+late_initcall(susfs_debug_init);
-
++#ifdef CONFIG_SUSFS
++pr_info("SUSFS_DEBUG: fs/namei.c loaded\n");
++#endif
++
