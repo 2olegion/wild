@@ -165,11 +165,23 @@ jobs:
               ;;
           esac
 
+      # 1️⃣ Cache zuerst prüfen
+      - name: Restore kernel source cache
+        id: kernel-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.KERNEL_ROOT }}
+          key: kernel-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
+      
+      # 2️⃣ Nur wenn Cache NICHT da ist → repo init + sync
       - name: Initialize and Sync Kernel Source
+        if: steps.kernel-cache.outputs.cache-hit != 'true'
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
+          set -e
           FORMATTED_BRANCH="android15-6.6-2025-10"
       
+          echo "==> repo init"
           $REPO init -u https://android.googlesource.com/kernel/manifest \
             -b common-${FORMATTED_BRANCH}
       
@@ -178,18 +190,10 @@ jobs:
           if grep -q deprecated <<< "$REMOTE_BRANCH"; then
             sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
           fi
-      - name: Restore kernel source cache
-        id: kernel-cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.KERNEL_ROOT }}
-          key: kernel-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
+      
+          echo "==> repo sync"
+          $REPO sync -j$(nproc --all) --fail-fast
 
-      - name: Cache kernel source
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.KERNEL_ROOT }}
-          key: kernel-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
 
 
       - name: Extract Sublevel and Set File Name
