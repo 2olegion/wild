@@ -324,7 +324,7 @@ jobs:
         run: |
          set -e
          echo "==> Applying SUSFS debug init patch"
-         patch -p1 < "$GITHUB_WORKSPACE/wild/susfs_debug_init.patch"
+         patch -p1 < "$GITHUB_WORKSPACE/susfs_debug_init.patch"
 
       # --------------------------------------------------
       # SUSFS FIX PATCHES (OPTIONAL / SAFE)
