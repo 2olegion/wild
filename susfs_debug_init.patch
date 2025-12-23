@@ -7,6 +7,6 @@ diff --git a/fs/namei.c b/fs/namei.c
               void *data_page)
  {
 +#ifdef CONFIG_SUSFS
-+    pr_info("SUSFS_DEBUG: do_mount() reached\n");
++	pr_info("SUSFS_DEBUG: do_mount() reached\n");
 +#endif
-     int ret;
+ 	int ret;
