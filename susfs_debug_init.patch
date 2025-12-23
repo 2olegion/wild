@@ -2,8 +2,8 @@ diff --git a/fs/namei.c b/fs/namei.c
 index 0000000..0000000 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -50,6 +50,10 @@
- #include <linux/fs.h>
+@@ -30,6 +30,10 @@
+ #include <linux/path.h>
  #include <linux/namei.h>
 
 +#ifdef CONFIG_SUSFS
