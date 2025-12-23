@@ -54,6 +54,14 @@ jobs:
           }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: DEBUG – list workspace
+        run: |
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE"
+
       - name: Maximize Build Space
         run: |
           curl -Ls https://raw.githubusercontent.com/apache/arrow/main/ci/scripts/util_free_space.sh | bash
