@@ -305,7 +305,7 @@ jobs:
 # SUSFS integration (Android 15 / GKI 6.6)
 # =========================================================
 
-    - name: Apply SUSFS core patch (allow partial)
+    - name: Apply SUSFS core patch (A15 / GKI 6.6)
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
         set -e
@@ -314,37 +314,36 @@ jobs:
         echo "==> Applying SUSFS core patch (partial allowed)"
         patch -p1 < "$PATCH" || true
     
-        # Rejects nur loggen, nicht abbrechen
         if ls fs/proc/*.rej 2>/dev/null; then
-          echo "⚠️ SUSFS core patch had rejects (expected on A15)"
-          cat fs/proc/*.rej || true
+          echo "⚠️ Expected rejects on Android 15 – ignoring"
           rm -f fs/proc/*.rej
         fi
+
 
     #----------------------------------------------------------
     
     - name: Fix SUSFS procfs symbols for Android 15
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
-        set -e
-        FILE="fs/proc/base.c"
-    
-        if ! grep -q "SUSFS procfs compatibility stubs" "$FILE"; then
-          sed -i '/#include <linux\/seq_file.h>/a \
-        \
-        #ifdef CONFIG_SUSFS\n\
-        /* SUSFS procfs compatibility stubs (Android 15 / GKI 6.6) */\n\
-        #ifndef BIT_SUS_MAPS\n\
-        #define BIT_SUS_MAPS (1UL << 31)\n\
-        #endif\n\
-        static inline bool susfs_is_current_proc_umounted(void)\n\
-        {\n\
-        \treturn false;\n\
-        }\n\
-        #endif\n' "$FILE"
-            fi
+          set -e
+          FILE="fs/proc/base.c"
+      
+          if ! grep -q "SUSFS procfs compatibility stubs" "$FILE"; then
+            sed -i '/#include <linux\/seq_file.h>/a \
+            \
+          #ifdef CONFIG_SUSFS\n\
+          /* SUSFS procfs compatibility stubs (Android 15 / GKI 6.6) */\n\
+          #ifndef BIT_SUS_MAPS\n\
+          #define BIT_SUS_MAPS (1UL << 31)\n\
+          #endif\n\
+          static inline bool susfs_is_current_proc_umounted(void)\n\
+          {\n\
+          \treturn false;\n\
+          }\n\
+          #endif\n' "$FILE"
+              fi
 
-    
+
     # ---------------------------------------------------------
     
     - name: Apply SUSFS required fix patches
