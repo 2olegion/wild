@@ -2,15 +2,17 @@ diff --git a/fs/susfs/susfs.c b/fs/susfs/susfs.c
 index 0000000..1111111 100644
 --- a/fs/susfs/susfs.c
 +++ b/fs/susfs/susfs.c
-@@ -1,5 +1,11 @@
+@@ -1,6 +1,18 @@
  #include <linux/init.h>
  #include <linux/kernel.h>
-+
+ 
 +#ifdef CONFIG_SUSFS
 +static int __init susfs_debug_init(void)
 +{
-+	pr_info("SUSFS_DEBUG: susfs module init reached\n");
++	pr_info("SUSFS_DEBUG: susfs init reached\n");
 +	return 0;
 +}
 +late_initcall(susfs_debug_init);
 +#endif
++
+ /* existing code below */
