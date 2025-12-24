@@ -5,8 +5,7 @@ on:
     inputs:
       kernel_sublevel:
         type: string
-        required: false
-        default: "102"
+        required: true
 
       ksu_variant:
         required: true
