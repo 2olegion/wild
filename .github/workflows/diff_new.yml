@@ -136,7 +136,7 @@ jobs:
         COMMIT=""
         case "${{ inputs.ksu_variant }}" in
           WKSU)
-            case "$TARGET" in 
+            case "$TARGET" in
               android12-5.10) COMMIT="8a76ba240d1f7315352b49d97d854a4b166e5b47" ;;
               android13-5.10) COMMIT="e5c9eabfc6dcfc677d11f46ce1d5ff786de60a92" ;;
               android13-5.15) COMMIT="babf6be195576f09aae79650d47abf6a76e8a21b" ;;
@@ -147,7 +147,7 @@ jobs:
             git checkout "$COMMIT"
             ;;
           Next)
-            case "$TARGET" in 
+            case "$TARGET" in
               android12-5.10) COMMIT="6796d4799aa943ef7cdeccda95e14302b4cd734c" ;;
               android13-5.10) COMMIT="6796d4799aa943ef7cdeccda95e14302b4cd734c" ;;
               android13-5.15) COMMIT="e7424bd61af892ab698ad9e93557e15dc7965590" ;;
@@ -177,17 +177,17 @@ jobs:
       run: |
         set -e
         FORMATTED_BRANCH="android15-6.6-2025-10"
-        
+
         echo "==> repo init"
         $REPO init -u https://android.googlesource.com/kernel/manifest \
           -b common-${FORMATTED_BRANCH}
-          REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH})
-          DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
-          if grep -q deprecated <<< "$REMOTE_BRANCH"; then
-            sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
-          fi
-          echo "==> repo sync"
-          $REPO sync -j$(nproc --all) --fail-fast
+        REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH})
+        DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
+        if grep -q deprecated <<< "$REMOTE_BRANCH"; then
+          sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
+        fi
+        echo "==> repo sync"
+        $REPO sync -j$(nproc --all) --fail-fast
 
 
     - name: Save kernel source cache
@@ -215,16 +215,16 @@ jobs:
     - name: Apply glibc 2.38 Compatibility Fix
       run: |
         # Use ACTUAL_SUBLEVEL for LTS builds, otherwise use the input sub_level
-        if [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.10" && $ACTUAL_SUBLEVEL -le 186 ]] || 
-           [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.15" && $ACTUAL_SUBLEVEL -le 119 ]] || 
-           [[ "${{ inputs.android_version }}" == "android14" && "${{ inputs.kernel_version }}" == "5.15" && $ACTUAL_SUBLEVEL -le 110 ]] || 
+        if [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.10" && $ACTUAL_SUBLEVEL -le 186 ]] ||
+           [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.15" && $ACTUAL_SUBLEVEL -le 119 ]] ||
+           [[ "${{ inputs.android_version }}" == "android14" && "${{ inputs.kernel_version }}" == "5.15" && $ACTUAL_SUBLEVEL -le 110 ]] ||
            [[ "${{ inputs.android_version }}" == "android14" && "${{ inputs.kernel_version }}" == "6.1" && $ACTUAL_SUBLEVEL -le 43 ]]; then
-          GLIBC_VERSION=$(ldd --version 2>/dev/null | head -n 1 | awk '{print $NF}') 
-          if [ "$(printf '%s\n' "2.38" "$GLIBC_VERSION" | sort -V | head -n1)" = "2.38" ]; then 
+          GLIBC_VERSION=$(ldd --version 2>/dev/null | head -n 1 | awk '{print $NF}')
+          if [ "$(printf '%s\n' "2.38" "$GLIBC_VERSION" | sort -V | head -n1)" = "2.38" ]; then
             cd "$KERNEL_ROOT/common"
             sed -i '/\$(Q)\$(MAKE) -C \$(SUBCMD_SRC) OUTPUT=\$(abspath \$(dir \$@))\/ \$(abspath \$@)/s//$(Q)$(MAKE) -C $(SUBCMD_SRC) EXTRA_CFLAGS="$(CFLAGS)" OUTPUT=$(abspath $(dir $@))\/ $(abspath $@)/' tools/bpf/resolve_btfids/Makefile 2>/dev/null || true
-            if [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.10" && $ACTUAL_SUBLEVEL -le 186 ]] || 
-               [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.15" && $ACTUAL_SUBLEVEL -le 119 ]] || 
+            if [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.10" && $ACTUAL_SUBLEVEL -le 186 ]] ||
+               [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.15" && $ACTUAL_SUBLEVEL -le 119 ]] ||
                [[ "${{ inputs.android_version }}" == "android14" && "${{ inputs.kernel_version }}" == "5.15" && $ACTUAL_SUBLEVEL -le 110 ]]; then
               sed -i '/char \*buf = NULL;/a int i;' tools/lib/subcmd/parse-options.c 2>/dev/null || true
               sed -i 's/for (int i = 0; subcommands\[i\]; i++) {/for (i = 0; subcommands[i]; i++) {/' tools/lib/subcmd/parse-options.c 2>/dev/null || true
@@ -232,7 +232,7 @@ jobs:
               sed -i 's/for (int i = 0; subcommands\[i\]; i++)/for (i = 0; subcommands[i]; i++)/' tools/lib/subcmd/parse-options.c 2>/dev/null || true
             fi
           fi
-        fi 
+        fi
 
     - name: Fix Less Then 6.6.50 Builds
       if: inputs.android_version == 'android15' && inputs.kernel_version == '6.6'
@@ -278,7 +278,7 @@ jobs:
     - name: Getting KernelSU Version
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
-        
+
         case "${{ inputs.ksu_variant }}" in
           WKSU)
             # OLD scheme
@@ -310,10 +310,10 @@ jobs:
       run: |
         set -e
         PATCH="$SUSFS4KSU/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch"
-    
+
         echo "==> Applying SUSFS core patch (partial allowed)"
         patch -p1 < "$PATCH" || true
-    
+
         if ls fs/proc/*.rej 2>/dev/null; then
           echo "⚠️ Expected rejects on Android 15 – ignoring"
           rm -f fs/proc/*.rej
@@ -321,13 +321,13 @@ jobs:
 
 
     #----------------------------------------------------------
-    
+
     - name: Fix SUSFS procfs symbols for Android 15
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
           set -e
           FILE="fs/proc/base.c"
-      
+
           if ! grep -q "SUSFS procfs compatibility stubs" "$FILE"; then
             sed -i '/#include <linux\/seq_file.h>/a \
             \
@@ -345,20 +345,20 @@ jobs:
 
 
     # ---------------------------------------------------------
-    
+
     - name: Apply SUSFS required fix patches
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
         set -e
         FIX="$KERNEL_PATCHES/wild/susfs_fix_patches/v2.0.0"
-    
+
         patch -p1 < "$FIX/fix_task_mmu.c.patch"
         patch -p1 < "$FIX/1_fix_base.c.patch"
-    
+
         rm -f fs/proc/*.rej
-    
+
     # ---------------------------------------------------------
-    
+
     - name: Select SUSFS version
       run: |
         case "${{ inputs.ksu_variant }}" in
@@ -373,48 +373,48 @@ jobs:
             exit 1
             ;;
         esac
-    
+
     # ---------------------------------------------------------
     # KernelSU-Next
     # ---------------------------------------------------------
-    
+
     - name: Apply KernelSU-Next SUSFS patch
       if: inputs.ksu_variant == 'Next'
       working-directory: ${{ env.KERNEL_ROOT }}/KernelSU-Next
       run: |
         set -e
         patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/Next-3.0.0-susfs-2.0.0-AIO.patch"
-    
+
     # ---------------------------------------------------------
     # WildKSU
     # ---------------------------------------------------------
-    
+
     - name: Apply WildKSU SUSFS patches
       if: inputs.ksu_variant == 'WKSU'
       working-directory: ${{ env.KERNEL_ROOT }}/Wild_KSU
       run: |
         set -e
-    
+
         patch -p1 < "$SUSFS4KSU/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
         patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_core_hook.c.patch"
         patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_sucompat.c.patch"
         patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_kernel_compat.c.patch"
-    
+
     # ---------------------------------------------------------
     # Classic KernelSU
     # ---------------------------------------------------------
-    
+
     - name: Apply KernelSU SUSFS patch
       if: inputs.ksu_variant == 'KSU'
       working-directory: ${{ env.KERNEL_ROOT }}/KernelSU
       run: |
         set -e
         patch -p1 < "$SUSFS4KSU/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
-    
+
     # ---------------------------------------------------------
     # Enable configs
     # ---------------------------------------------------------
-    
+
     - name: Enable SUSFS in defconfig
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
@@ -626,7 +626,7 @@ jobs:
             sed -i '/_COMMON_GKI_MODULES_LIST = \[/,/^[[:space:]]*\]/{/^[[:space:]]*\]$/i\    "drivers/usb/gadget/legacy/g_audio.ko",
             }' common/modules.bzl
           fi
-          
+
           # Verify the injection was successful
           if grep -q '"sound/drivers/snd-aloop.ko"' common/modules.bzl && \
             grep -q '"drivers/usb/gadget/libcomposite.ko"' common/modules.bzl && \
@@ -797,13 +797,13 @@ jobs:
         if [[ "${{ inputs.android_version }}" == "android12" ]]; then
           GKI_URL="https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-${{ inputs.os_patch_level }}_r1.zip"
           FALLBACK_URL="https://dl.google.com/android/gki/gki-certified-boot-android12-5.10-2023-01_r1.zip"
-          
+
           if curl -sL -w "%{http_code}" "$GKI_URL" -o /dev/null | grep -q 200; then
             curl -Lo gki-kernel.zip "$GKI_URL"
           else
             curl -Lo gki-kernel.zip "$FALLBACK_URL"
           fi
-          
+
           unzip -q gki-kernel.zip && rm gki-kernel.zip
           $UNPACK_BOOTIMG --boot_img="$(pwd)/boot-5.10.img"
           RAMDISK_ARGS="--ramdisk out/ramdisk --os_version 12.0.0 --os_patch_level ${{ inputs.os_patch_level }}"
@@ -814,7 +814,7 @@ jobs:
           kernel="Image${suffix}"
           output="boot${suffix//./-}.img"
           [ -z "$suffix" ] && output="boot.img"
-          
+
           $MKBOOTIMG --header_version 4 --kernel "$kernel" --output "$output" $RAMDISK_ARGS
           $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64 * 1024 * 1024)) \
             --image "$output" --algorithm SHA256_RSA2048 --key "$BOOT_SIGN_KEY_PATH"
