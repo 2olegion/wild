@@ -640,13 +640,14 @@ jobs:
             perl -i -pe 's/^(\s*)return 1$/$1print("Who Cares? Bypassing Now!")\n$1return 0/g if /if missing_symbols:/../return 1/' build/kernel/abi/check_buildtime_symbol_protection.py
           fi
           
-      - name: Append ashmem exports if missing
-        if: ${{ inputs.android_version == 'android16' && inputs.kernel_version == '6.12' }} && false
+      - name: Fix ashmem + binder (Android 15 / GKI)
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
+          set -e
+      
           FILE=common/drivers/staging/android/ashmem.c
           if [[ -f "$FILE" ]] && ! grep -q 'is_ashmem_file' "$FILE"; then
-          cat >>"$FILE" <<'EOF'
+            cat >>"$FILE" <<'EOF'
           bool is_ashmem_file(struct file *file) { return false; }
           int ashmem_area_name(struct file *file, char *name) { return 0; }
           long ashmem_area_size(struct file *file) { return 0; }
@@ -657,44 +658,42 @@ jobs:
           EXPORT_SYMBOL_GPL(ashmem_area_vmfile);
           EOF
           fi
-  
+      
           if [ -f common/drivers/android/binder/Makefile ]; then
-            perl -i -0777 -pe 's/\$\(\s*CONFIG_ANDROID_BINDER_IPC_RUST\s*\)/m/' common/drivers/android/binder/Makefile
-            #perl -i -ne 'print unless /CONFIG_ANDROID_BINDER_IPC_RUST_DUMMY/' common/drivers/android/binder/Makefile
-            perl -i -pe 's/^rust_binder-\$\([^)]+\)\s*:=/rust_binder-y :=/' common/drivers/android/binder/Makefile
-            cat common/drivers/android/Makefile
-            cat common/drivers/android/binder/Makefile
-            #perl -ni -e 'print unless /rust_toolchain\s*=\s*"\/\/build\/rust:linux_kernel_toolchain",/' common/BUILD.bazel
-            #cat common/BUILD.bazel
-            rustup set profile minimal
-            rustup update nightly
-            rustup default nightly
-            rustup target add aarch64-unknown-none
+            perl -i -0777 -pe 's/\$\(\s*CONFIG_ANDROID_BINDER_IPC_RUST\s*\)/m/' \
+              common/drivers/android/binder/Makefile
+            perl -i -pe 's/^rust_binder-\$\([^)]+\)\s*:=/rust_binder-y :=/' \
+              common/drivers/android/binder/Makefile
           else
-            perl -i -0777 -pe 's/\$\(\s*CONFIG_ANDROID_BINDER_IPC_RUST\s*\)/m/' common/drivers/android/Makefile
-            cat common/drivers/android/Makefile
+            perl -i -0777 -pe 's/\$\(\s*CONFIG_ANDROID_BINDER_IPC_RUST\s*\)/m/' \
+              common/drivers/android/Makefile
           fi
-
           
-          - name: Final KernelSU + SUSFS config
-            working-directory: ${{ env.KERNEL_ROOT }}
-            run: |
-              set -e
-              DEFCONFIG=common/arch/arm64/configs/gki_defconfig
-              sed -i '/CONFIG_KSU/d' "$DEFCONFIG"
-              sed -i '/CONFIG_SUSFS/d' "$DEFCONFIG"
-              cat >> "$DEFCONFIG" << 'EOF'
-              CONFIG_KSU=y
-              CONFIG_KSU_MANUAL_HOOK=y
-              CONFIG_KSU_KPROBES_HOOK=n
-              CONFIG_SUSFS=y
-              CONFIG_KSU_SUSFS=y
-              CONFIG_TMPFS_XATTR=y
-              CONFIG_TMPFS_POSIX_ACL=y
-              EOF
-    
-            echo "✓ Final KernelSU + SUSFS config applied"
-            grep -E 'CONFIG_(KSU|SUSFS)' "$DEFCONFIG"
+
+      - name: Final KernelSU + SUSFS config
+        working-directory: ${{ env.KERNEL_ROOT }}
+        run: |
+          set -e
+      
+          DEFCONFIG=common/arch/arm64/configs/gki_defconfig
+      
+          sed -i '/^CONFIG_KSU/d' "$DEFCONFIG"
+          sed -i '/^CONFIG_SUSFS/d' "$DEFCONFIG"
+      
+          cat >> "$DEFCONFIG" << 'EOF'
+          CONFIG_KSU=y
+          CONFIG_KSU_MANUAL_HOOK=y
+          CONFIG_KSU_KPROBES_HOOK=n
+          
+          CONFIG_SUSFS=y
+          CONFIG_KSU_SUSFS=y
+          
+          CONFIG_TMPFS_XATTR=y
+          CONFIG_TMPFS_POSIX_ACL=y
+          EOF
+      
+          echo "✓ Final KernelSU + SUSFS config applied"
+          grep -E '^CONFIG_(KSU|SUSFS)' "$DEFCONFIG"
 
 
       - name: Change Kernel Name
