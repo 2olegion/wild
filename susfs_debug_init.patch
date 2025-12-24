@@ -1,3 +1,6 @@
+- name: Create SUSFS debug patch (raw)
+  run: |
+    cat > "$GITHUB_WORKSPACE/susfs_debug_init.patch" <<'EOF'
 diff --git a/fs/namei.c b/fs/namei.c
 --- a/fs/namei.c
 +++ b/fs/namei.c
@@ -10,4 +13,4 @@ diff --git a/fs/namei.c b/fs/namei.c
 +	pr_info("SUSFS_DEBUG: do_mount() reached\n");
 +#endif
  	int ret;
-
+EOF
