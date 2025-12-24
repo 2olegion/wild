@@ -325,24 +325,20 @@ jobs:
     - name: Fix SUSFS procfs symbols for Android 15
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
-          set -e
-          FILE="fs/proc/base.c"
-      
-          if ! grep -q "SUSFS procfs compatibility stubs" "$FILE"; then
-            sed -i '/#include <linux\/seq_file.h>/a \
-            \
-          #ifdef CONFIG_SUSFS\n\
-          /* SUSFS procfs compatibility stubs (Android 15 / GKI 6.6) */\n\
-          #ifndef BIT_SUS_MAPS\n\
-          #define BIT_SUS_MAPS (1UL << 31)\n\
-          #endif\n\
-          static inline bool susfs_is_current_proc_umounted(void)\n\
-          {\n\
-          \treturn false;\n\
-          }\n\
-          #endif\n' "$FILE"
-              fi
+        set -e
+        echo "==> Applying SUSFS procfs fix patch"
+        patch -p1 < "$GITHUB_WORKSPACE/susfs_a15_procfs_fix.patch" || true
 
+    # ---------------------------------------------------------
+    # SUSFS Debug
+    # ---------------------------------------------------------
+    
+    #- name: Apply SUSFS debug init (EXPERIMENTAL)
+    #  working-directory: ${{ env.KERNEL_ROOT }}/common
+    #  run: |
+    #    set -e
+    #    echo "==> Applying SUSFS debug init patch"
+    #    patch -p1 < "$GITHUB_WORKSPACE/susfs_debug_init.patch"
 
     # ---------------------------------------------------------
     
