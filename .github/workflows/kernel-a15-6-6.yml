@@ -1,30 +1,28 @@
-name: Build Kernel (Android 15 • 6.6)
+name: Kernel Config - Custom
+
+permissions:
+  contents: write
+  actions: write
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      kernel_sublevel:
-        description: "Kernel Sublevel"
-        type: choice
-        options:
-          - "102"
-          - "98"
-        default: "102"
-
       ksu_variant:
-        type: choice
-        options: [ KSU, Next, WildKSU ]
-        default: Next
-
-      require_susfs:
-        type: boolean
-        default: true
+        required: true
+        type: string
+      ksu_commit:
+        required: false
+        type: string
 
 jobs:
   build:
-    uses: ./.github/workflows/kernel-a15-6-6.yml
+    uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
-      kernel_sublevel: ${{ inputs.kernel_sublevel }}
+      android_version: ${{ matrix.android_version }}
+      kernel_version: ${{ matrix.kernel_version }}
+      sub_level: ${{ matrix.sub_level }}
+      os_patch_level: ${{ matrix.os_patch_level }}
+      variant: ${{ matrix.variant }}
       ksu_variant: ${{ inputs.ksu_variant }}
-      require_susfs: ${{ inputs.require_susfs }}
+      ksu_commit: ${{ inputs.ksu_commit }}
