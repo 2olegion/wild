@@ -93,6 +93,15 @@ jobs:
         chmod a+rx ./git-repo/repo
         echo "REPO=$GITHUB_WORKSPACE/./git-repo/repo" >> $GITHUB_ENV
 
+    - name: Cache build tools
+      uses: actions/cache@v4
+      with:
+        path: |
+          kernel-build-tools
+          mkbootimg
+        key: build-tools-${{ inputs.android_version }}-${{ inputs.kernel_version }}
+
+
     - name: Set boot sign key
       env:
         BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
@@ -148,7 +157,16 @@ jobs:
             ;;
         esac
 
+    - name: Restore kernel source cache
+      id: kernel-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.KERNEL_ROOT }}
+        key: kernel-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
+
     - name: Initialize and Sync Kernel Source
+      if: steps.kernel-cache.outputs.cache-hit != 'true'
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
         FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}"
@@ -158,11 +176,20 @@ jobs:
 
         REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH})
         DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
-        if grep -q deprecated <<< $REMOTE_BRANCH; then
-          sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" $DEFAULT_MANIFEST_PATH
+        if grep -q deprecated <<< "$REMOTE_BRANCH"; then
+          sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
         fi
 
-        $REPO --trace sync -j$(nproc --all) --fail-fast
+        $REPO sync -j$(nproc --all) --fail-fast
+
+    - name: Save kernel source cache
+      if: steps.kernel-cache.outputs.cache-hit != 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.KERNEL_ROOT }}
+        key: kernel-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
+
 
     - name: Extract Sublevel and Set File Name
       run: |
