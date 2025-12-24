@@ -266,81 +266,104 @@ jobs:
         esac
         echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
 
-    - name: Apply SUSFS Patches for KernelSU Variants
+# =========================================================
+# SUSFS integration (Android 15 / GKI 6.6)
+# =========================================================
+
+    - name: Apply SUSFS core patch
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
         set -e
-          PATCH="$SUSFS4KSU/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch"
-          if [ ! -f "$PATCH" ]; then
-            echo "SUSFS core patch missing: $PATCH"
-            exit 1
-          fi
-          echo "==> Applying SUSFS core patch"
-          patch -p1 < "$PATCH" || true
-          rm -f fs/proc/*.rej
-          
-    - name: Apply SUSFS fix patches (REQUIRED)
+        PATCH="$SUSFS4KSU/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch"
+    
+        if [ ! -f "$PATCH" ]; then
+          echo "❌ SUSFS core patch missing: $PATCH"
+          exit 1
+        fi
+    
+        echo "==> Applying SUSFS core patch"
+        patch -p1 < "$PATCH"
+    
+    # ---------------------------------------------------------
+    
+    - name: Apply SUSFS required fix patches
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
-         set -e
-            FIX="$KERNEL_PATCHES/wild/susfs_fix_patches/v2.0.0"
-            apply_optional() {
-              local p="$1"
-              [ -f "$p" ] || return 0
-              for lvl in 0 1 2; do
-                if patch -p"$lvl" --dry-run < "$p" >/dev/null 2>&1; then
-                  patch -p"$lvl" < "$p"
-                  echo "applied $(basename "$p") with -p$lvl"
-                  return
-                fi
-              done
-              echo "skipped $(basename "$p")"
-            }
-            apply_optional "$FIX/fix_task_mmu.c.patch"
-            apply_optional "$FIX/1_fix_base.c.patch"
-            rm -f fs/proc/*.rej
-
-                    case "${{ inputs.ksu_variant }}" in
-          WKSU)
-            SUSFS_VERSION="1.5.12"
-          ;;
-          Next)
-            SUSFS_VERSION="2.0.0"
-          ;;
-          KSU)
-            SUSFS_VERSION="2.0.0"
-          ;;
-          esac
-          cp "$SUSFS4KSU/kernel_patches/fs/"* "$KERNEL_ROOT/common/fs/"
-          cp "$SUSFS4KSU/kernel_patches/include/linux/"* "$KERNEL_ROOT/common/include/linux/"
-
-          cd "$KERNEL_ROOT/common"
-
-            #|| true
+        set -e
+        FIX="$KERNEL_PATCHES/wild/susfs_fix_patches/v2.0.0"
     
-            case "${{ inputs.ksu_variant }}" in
-              WKSU)
-                cd "$KERNEL_ROOT/Wild_KSU"
-                cp "$SUSFS4KSU/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch" .
-                patch -p1 < 10_enable_susfs_for_ksu.patch || true
-                cp "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_core_hook.c.patch" ./
-                patch -p1 < fix_core_hook.c.patch
-                cp "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_sucompat.c.patch" ./
-                patch -p1 < fix_sucompat.c.patch
-                cp "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_kernel_compat.c.patch" ./
-                patch -p1 < fix_kernel_compat.c.patch
-                ;;
-              Next)
-                cd "$KERNEL_ROOT/KernelSU-Next"
-                cp "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/"*.patch ./
-                patch -p1 < Next-3.0.0-susfs-2.0.0-AIO.patch
-                ;;
-              KSU)
-                cd "$KERNEL_ROOT/KernelSU"
-                cp "$SUSFS4KSU/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch" .
-                patch -p1 < 10_enable_susfs_for_ksu.patch || true
-                ;;
-            esac
+        patch -p1 < "$FIX/fix_task_mmu.c.patch"
+        patch -p1 < "$FIX/1_fix_base.c.patch"
+    
+        rm -f fs/proc/*.rej
+    
+    # ---------------------------------------------------------
+    
+    - name: Select SUSFS version
+      run: |
+        case "${{ inputs.ksu_variant }}" in
+          WKSU)
+            echo "SUSFS_VERSION=1.5.12" >> "$GITHUB_ENV"
+            ;;
+          Next|KSU)
+            echo "SUSFS_VERSION=2.0.0" >> "$GITHUB_ENV"
+            ;;
+          *)
+            echo "❌ Unknown ksu_variant: ${{ inputs.ksu_variant }}"
+            exit 1
+            ;;
+        esac
+    
+    # ---------------------------------------------------------
+    # KernelSU-Next
+    # ---------------------------------------------------------
+    
+    - name: Apply KernelSU-Next SUSFS patch
+      if: inputs.ksu_variant == 'Next'
+      working-directory: ${{ env.KERNEL_ROOT }}/KernelSU-Next
+      run: |
+        set -e
+        patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/Next-3.0.0-susfs-2.0.0-AIO.patch"
+    
+    # ---------------------------------------------------------
+    # WildKSU
+    # ---------------------------------------------------------
+    
+    - name: Apply WildKSU SUSFS patches
+      if: inputs.ksu_variant == 'WKSU'
+      working-directory: ${{ env.KERNEL_ROOT }}/Wild_KSU
+      run: |
+        set -e
+    
+        patch -p1 < "$SUSFS4KSU/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
+        patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_core_hook.c.patch"
+        patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_sucompat.c.patch"
+        patch -p1 < "$KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/fix_kernel_compat.c.patch"
+    
+    # ---------------------------------------------------------
+    # Classic KernelSU
+    # ---------------------------------------------------------
+    
+    - name: Apply KernelSU SUSFS patch
+      if: inputs.ksu_variant == 'KSU'
+      working-directory: ${{ env.KERNEL_ROOT }}/KernelSU
+      run: |
+        set -e
+        patch -p1 < "$SUSFS4KSU/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
+    
+    # ---------------------------------------------------------
+    # Enable configs
+    # ---------------------------------------------------------
+    
+    - name: Enable SUSFS in defconfig
+      working-directory: ${{ env.KERNEL_ROOT }}
+      run: |
+        cat >> common/arch/arm64/configs/gki_defconfig << 'EOF'
+        CONFIG_SUSFS=y
+        CONFIG_KSU_SUSFS=y
+        CONFIG_KSU=y
+        EOF
+
 
     - name: Apply Hooks Patches
       if: ${{ inputs.ksu_variant == 'WKSU' }}
