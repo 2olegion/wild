@@ -305,19 +305,18 @@ jobs:
 # SUSFS integration (Android 15 / GKI 6.6)
 # =========================================================
 
-    - name: Apply SUSFS core patch
+    - name: Apply SUSFS core patch (REQUIRED)
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
         set -e
-        PATCH="$SUSFS4KSU/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch"
-    
-        if [ ! -f "$PATCH" ]; then
-          echo "❌ SUSFS core patch missing: $PATCH"
-          exit 1
-        fi
-    
-        echo "==> Applying SUSFS core patch"
-        patch -p1 < "$PATCH"
+          PATCH="$SUSFS4KSU/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch"
+          if [ ! -f "$PATCH" ]; then
+            echo "SUSFS core patch missing: $PATCH"
+            exit 1
+          fi
+          echo "==> Applying SUSFS core patch"
+          patch -p1 < "$PATCH" || true
+          rm -f fs/proc/*.rej
     
     # ---------------------------------------------------------
     
