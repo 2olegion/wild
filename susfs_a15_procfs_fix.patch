@@ -1,0 +1,22 @@
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1,6 +1,18 @@
+ #include <linux/fs.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
++
++#ifdef CONFIG_SUSFS
++/*
++ * Android 15 / GKI 6.6 compatibility stubs
++ * WildKernels SUSFS does not provide these yet
++ */
++#ifndef BIT_SUS_MAPS
++#define BIT_SUS_MAPS (1UL << 31)
++#endif
++
++static inline bool susfs_is_current_proc_umounted(void)
++{
++	return false;
++}
++#endif
