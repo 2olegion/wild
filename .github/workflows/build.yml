@@ -359,6 +359,19 @@ jobs:
           apply_optional "$FIX/1_fix_base.c.patch"
           rm -f fs/proc/*.rej
 
+      - name: Apply Android 15 SUSFS procfs compatibility fix
+        if: ${{ inputs.android_version == 'android15' && inputs.kernel_version == '6.6' }}
+        working-directory: ${{ env.KERNEL_ROOT }}/common
+        run: |
+          set -e
+          echo "==> Applying Android 15 SUSFS procfs compatibility fix"
+          if patch -p1 --dry-run < "$GITHUB_WORKSPACE/susfs_a15_procfs_fix.patch" >/dev/null 2>&1; then
+            patch -p1 < "$GITHUB_WORKSPACE/susfs_a15_procfs_fix.patch"
+            echo "Successfully applied susfs_a15_procfs_fix.patch"
+          else
+            echo "Patch not applicable or already applied, skipping"
+          fi
+
       - name: Apply Hooks Patches
         if: ${{ inputs.ksu_variant == 'WKSU' }}
         working-directory: ${{ env.KERNEL_ROOT }}/common
