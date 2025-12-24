@@ -101,6 +101,12 @@ jobs:
           mkbootimg
         key: build-tools-${{ inputs.android_version }}-${{ inputs.kernel_version }}
 
+    - name: Save kernel source cache
+      if: always()
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.KERNEL_ROOT }}
+        key: kernel-src-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}
 
     - name: Set boot sign key
       env:
@@ -169,18 +175,19 @@ jobs:
       if: steps.kernel-cache.outputs.cache-hit != 'true'
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
-        FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}"
-
+        set -e
+        FORMATTED_BRANCH="android15-6.6-2025-10"
+        
+        echo "==> repo init"
         $REPO init -u https://android.googlesource.com/kernel/manifest \
-          -b common-${FORMATTED_BRANCH} --repo-rev=stable
-
-        REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH})
-        DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
-        if grep -q deprecated <<< "$REMOTE_BRANCH"; then
-          sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
-        fi
-
-        $REPO sync -j$(nproc --all) --fail-fast
+          -b common-${FORMATTED_BRANCH}
+          REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH})
+          DEFAULT_MANIFEST_PATH=.repo/manifests/default.xml
+          if grep -q deprecated <<< "$REMOTE_BRANCH"; then
+            sed -i "s/\"${FORMATTED_BRANCH}\"/\"deprecated\/${FORMATTED_BRANCH}\"/g" "$DEFAULT_MANIFEST_PATH"
+          fi
+          echo "==> repo sync"
+          $REPO sync -j$(nproc --all) --fail-fast
 
 
     - name: Save kernel source cache
