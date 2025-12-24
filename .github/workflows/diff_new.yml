@@ -297,25 +297,26 @@ jobs:
 # =========================================================
 # SUSFS integration (Android 15 / GKI 6.6)
 # =========================================================
-    - name: Apply Android 15 procfs SUSFS compatibility patch
+    - name: Apply Android 15 procfs SUSFS compatibility stub
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
         set -e
-
-            cat << 'EOF' | patch -p1
+    
+        echo "==> Applying SUSFS procfs compatibility stub"
+    
+        patch -p1 << 'EOF'
         diff --git a/fs/proc/base.c b/fs/proc/base.c
-        index 0000000..1111111 100644
+        index 8c2a0b7..8c2a0b7 100644
         --- a/fs/proc/base.c
         +++ b/fs/proc/base.c
-        @@ -1,6 +1,20 @@
-         #include <linux/fs.h>
+        @@ -6,6 +6,22 @@
          #include <linux/proc_fs.h>
          #include <linux/seq_file.h>
-        +
+        
         +#ifdef CONFIG_SUSFS
         +/*
         + * Android 15 / GKI 6.6 compatibility stubs
-        + * WildKernels SUSFS does not define these yet
+        + * Required when SUSFS core does not export these symbols yet
         + */
         +#ifndef BIT_SUS_MAPS
         +#define BIT_SUS_MAPS (1UL << 31)
@@ -326,7 +327,8 @@ jobs:
         +	return false;
         +}
         +#endif
-        EOF
+        +
+         EOF
 
 
     - name: Verify SUSFS procfs symbols
