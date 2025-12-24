@@ -319,6 +319,25 @@ jobs:
           rm -f fs/proc/*.rej
         fi
 
+    - name: Install SUSFS headers (REQUIRED)
+      working-directory: ${{ env.KERNEL_ROOT }}
+      run: |
+        set -e
+        echo "==> Installing SUSFS headers"
+        
+        SRC="$SUSFS4KSU/kernel_patches/include/linux"
+        DST="common/include/linux"
+        
+        if [ ! -d "$SRC" ]; then
+          echo "❌ SUSFS header source missing: $SRC"
+            exit 1
+          fi
+        
+          cp -v "$SRC"/susfs*.h "$DST"/
+        
+          echo "==> SUSFS headers installed:"
+          ls -l "$DST"/susfs*.h
+ 
 
     #----------------------------------------------------------
     
