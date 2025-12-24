@@ -187,8 +187,8 @@ jobs:
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           set -e
-          FORMATTED_BRANCH="android15-6.6-2025-10"
-      
+          FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}"
+
           echo "==> repo init"
           $REPO init -u https://android.googlesource.com/kernel/manifest \
             -b common-${FORMATTED_BRANCH}
@@ -203,17 +203,10 @@ jobs:
           $REPO sync -j$(nproc --all) --fail-fast
 
 
-
-      - name: Extract Sublevel and Set File Name
-        run: |
-          ACTUAL_SUBLEVEL="102"
-          if [ -f "$KERNEL_ROOT/common/Makefile" ]; then
-            EXTRACTED=$(grep '^SUBLEVEL = ' "$KERNEL_ROOT/common/Makefile" | awk '{print $3}')
-            [ -n "$EXTRACTED" ] && ACTUAL_SUBLEVEL="$EXTRACTED"
-          fi
-      
-          ARTIFACT_BASE="6.6.$ACTUAL_SUBLEVEL-android15-2025-10-Bypass"
+          ACTUAL_SUBLEVEL="${{ inputs.sub_level }}"
+          
           echo "ACTUAL_SUBLEVEL=$ACTUAL_SUBLEVEL" >> $GITHUB_ENV
+          ARTIFACT_BASE="6.6.$ACTUAL_SUBLEVEL-android15-${{ inputs.os_patch_level }}-Bypass"
           echo "ARTIFACT_BASE=$ARTIFACT_BASE" >> $GITHUB_ENV
           echo "FILE_NAME=$ARTIFACT_BASE" >> $GITHUB_ENV
 
