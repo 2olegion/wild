@@ -305,38 +305,6 @@ jobs:
 # SUSFS integration (Android 15 / GKI 6.6)
 # =========================================================
 
-    - name: Inject SUSFS procfs compatibility stub
-      working-directory: ${{ env.KERNEL_ROOT }}/common
-      run: |
-        set -e
-
-        FILE="fs/proc/base.c"
-        
-        if ! grep -q "SUSFS procfs compatibility stubs" "$FILE"; then
-          sed -i '/#include <linux\/seq_file.h>/a \
-          \
-        #ifdef CONFIG_SUSFS\n\
-        /*\n\
-         * SUSFS procfs compatibility stubs (Android 15 / GKI 6.6)\n\
-         */\n\
-        #ifndef BIT_SUS_MAPS\n\
-        #define BIT_SUS_MAPS (1UL << 31)\n\
-        #endif\n\
-        static inline bool susfs_is_current_proc_umounted(void)\n\
-        {\n\
-        \treturn false;\n\
-        }\n\
-        #endif\n' "$FILE"
-            fi
-
-
-
-    - name: Verify SUSFS procfs symbols
-      working-directory: ${{ env.KERNEL_ROOT }}/common
-      run: |
-        grep -R "BIT_SUS_MAPS" fs/proc/base.c
-        grep -R "susfs_is_current_proc_umounted" fs/proc/base.c
-
     - name: Apply SUSFS core patch
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
