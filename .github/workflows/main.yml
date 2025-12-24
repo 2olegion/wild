@@ -12,11 +12,20 @@ on:
         type: choice
         options: [ KSU, Next, WildKSU, SukiSU ]
         default: Next
+      kernel_sublevel:
+            description: "Kernel Sublevel"
+            type: choice
+            options:
+              - "102"
+              - "98"
+            default: "102"
 
       require_susfs:
         description: "Enable SUSFS"
         type: boolean
         default: true
+
+        
 
 jobs:
   build-6-6:
