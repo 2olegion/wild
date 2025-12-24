@@ -1,4 +1,5 @@
 diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 0000000..1111111 100644
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
 @@ -1,6 +1,18 @@
@@ -9,7 +10,7 @@ diff --git a/fs/proc/base.c b/fs/proc/base.c
 +#ifdef CONFIG_SUSFS
 +/*
 + * Android 15 / GKI 6.6 compatibility stubs
-+ * WildKernels SUSFS does not provide these yet
++ * Required because WildKernels SUSFS does not define them yet
 + */
 +#ifndef BIT_SUS_MAPS
 +#define BIT_SUS_MAPS (1UL << 31)
