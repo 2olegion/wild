@@ -4,8 +4,9 @@ on:
   workflow_call:
     inputs:
       kernel_sublevel:
-        required: true
         type: string
+        required: false
+        default: "102"
 
       ksu_variant:
         required: true
