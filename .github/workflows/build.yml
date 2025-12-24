@@ -327,12 +327,12 @@ jobs:
       # SUSFS Debug
       #---------------------------------------------------
       
-      - name: Apply SUSFS debug init (EXPERIMENTAL)
-        working-directory: ${{ env.KERNEL_ROOT }}/common
-        run: |
-         set -e
-         echo "==> Applying SUSFS debug init patch"
-         patch -p1 < "$GITHUB_WORKSPACE/susfs_debug_init.patch"
+      #- name: Apply SUSFS debug init (EXPERIMENTAL)
+      #  working-directory: ${{ env.KERNEL_ROOT }}/common
+      #  run: |
+      #   set -e
+      #   echo "==> Applying SUSFS debug init patch"
+      #   patch -p1 < "$GITHUB_WORKSPACE/susfs_debug_init.patch"
 
       # --------------------------------------------------
       # SUSFS FIX PATCHES (OPTIONAL / SAFE)
