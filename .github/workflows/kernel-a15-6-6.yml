@@ -6,6 +6,13 @@ on:
       kernel_sublevel:
         type: string
         required: true
+        
+      os_patch_level:
+        type: choice
+          options:
+            - "2025-09"
+            - "2025-10"
+          default: "2025-10"
 
       ksu_variant:
         required: true
@@ -24,6 +31,6 @@ jobs:
       android_version: android15
       kernel_version: "6.6"
       sub_level: ${{ inputs.kernel_sublevel }}
-      os_patch_level: "2025-10"
+      os_patch_level: ${{ inputs.os_patch_level }}
       ksu_variant: ${{ inputs.ksu_variant }}
       require_susfs: ${{ inputs.require_susfs }}
