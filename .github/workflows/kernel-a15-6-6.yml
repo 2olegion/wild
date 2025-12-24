@@ -1,40 +1,29 @@
-name: Kernel (Android 15 • 6.6)
+name: Kernel A15 6.6 (Single Build)
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       kernel_sublevel:
-        description: "Kernel 6.6 sublevel"
-        type: choice
-        options:
-          - "98"
-          - "102"
-        default: "102"
+        required: true
+        type: string
 
       ksu_variant:
-        description: "KernelSU Variant"
-        type: choice
-        options:
-          - KSU
-          - Next
-          - WildKSU
-          - SukiSU
-        default: Next
+        required: true
+        type: string
 
       require_susfs:
-        description: "Enable SUSFS"
+        required: true
         type: boolean
-        default: true
 
 jobs:
-  build:
+  build-a15-6-6:
+    name: Android 15 • Kernel 6.6.${{ inputs.kernel_sublevel }}
     uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
-      android_version: ${{ matrix.android_version }}
-      kernel_version: ${{ matrix.kernel_version }}
-      sub_level: ${{ matrix.sub_level }}
-      os_patch_level: ${{ matrix.os_patch_level }}
-      variant: ${{ matrix.variant }}
+      android_version: android15
+      kernel_version: "6.6"
+      sub_level: ${{ inputs.kernel_sublevel }}
+      os_patch_level: "2025-10"
       ksu_variant: ${{ inputs.ksu_variant }}
-      ksu_commit: ${{ inputs.ksu_commit }}
+      require_susfs: ${{ inputs.require_susfs }}
