@@ -1,14 +1,30 @@
-name: Build Kernel (Android 15 • 6.6)
+name: Kernel (Android 15 • 6.6)
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
+      kernel_sublevel:
+        description: "Kernel 6.6 sublevel"
+        type: choice
+        options:
+          - "98"
+          - "102"
+        default: "102"
+
       ksu_variant:
-        required: true
-        type: string
-      ksu_commit:
-        required: false
-        type: string
+        description: "KernelSU Variant"
+        type: choice
+        options:
+          - KSU
+          - Next
+          - WildKSU
+          - SukiSU
+        default: Next
+
+      require_susfs:
+        description: "Enable SUSFS"
+        type: boolean
+        default: true
 
 jobs:
   build:
