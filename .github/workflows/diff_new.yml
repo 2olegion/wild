@@ -305,19 +305,46 @@ jobs:
 # SUSFS integration (Android 15 / GKI 6.6)
 # =========================================================
 
-    - name: Apply SUSFS core patch (A15 / GKI 6.6)
+    - name: Apply SUSFS core patch (STRICT)
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
         set -e
+    
         PATCH="$SUSFS4KSU/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch"
     
-        echo "==> Applying SUSFS core patch (partial allowed)"
-        patch -p1 < "$PATCH" || true
-    
-        if ls fs/proc/*.rej 2>/dev/null; then
-          echo "⚠️ Expected rejects on Android 15 – ignoring"
-          rm -f fs/proc/*.rej
+        if [ ! -f "$PATCH" ]; then
+          echo "❌ SUSFS core patch missing"
+          exit 1
         fi
+    
+        echo "==> Applying SUSFS core patch (STRICT)"
+        patch -p1 < "$PATCH"
+    
+        # Wenn rejects existieren → HARTE FEHLER
+        if find fs -name '*.rej' | grep -q .; then
+          echo "❌ SUSFS core patch produced rejects"
+          find fs -name '*.rej'
+          exit 1
+        fi
+
+    - name: Apply SUSFS fix patches (MANDATORY)
+      working-directory: ${{ env.KERNEL_ROOT }}/common
+      run: |
+        set -e
+      
+          FIX="$KERNEL_PATCHES/wild/susfs_fix_patches/v2.0.0"
+      
+          for p in fix_task_mmu.c.patch 1_fix_base.c.patch; do
+            FILE="$FIX/$p"
+            if [ -f "$FILE" ]; then
+              echo "Applying $p"
+              patch -p1 < "$FILE"
+            else
+              echo "❌ Missing required SUSFS fix: $p"
+              exit 1
+            fi
+          done
+
 
     - name: Install SUSFS headers (REQUIRED)
       working-directory: ${{ env.KERNEL_ROOT }}
@@ -337,6 +364,27 @@ jobs:
         
           echo "==> SUSFS headers installed:"
           ls -l "$DST"/susfs*.h
+
+    - name: Verify SUSFS headers & symbols
+      working-directory: ${{ env.KERNEL_ROOT }}/common
+      run: |
+        set -e
+      
+          test -f include/linux/susfs_def.h
+          test -f include/linux/susfs.h
+      
+          grep -R "BIT_SUS_MAPS" include/linux/susfs* fs/susfs || {
+            echo "❌ BIT_SUS_MAPS not defined"
+            exit 1
+          }
+      
+          grep -R "susfs_is_current_proc_umounted" fs/susfs || {
+            echo "❌ susfs_is_current_proc_umounted missing"
+            exit 1
+          }
+      
+          echo "✓ SUSFS core symbols present"
+
  
 
     #----------------------------------------------------------
@@ -755,6 +803,8 @@ jobs:
           rm -rf ./common/android/abi_gki_protected_exports_*
           perl -pi -e 's/^\s*"protected_exports_list"\s*:\s*"android\/abi_gki_protected_exports_aarch64",\s*$//;' ./common/BUILD.bazel
         fi
+
+        
 
     - name: Build
       working-directory: ${{ env.KERNEL_ROOT }}
