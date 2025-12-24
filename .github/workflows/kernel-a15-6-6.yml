@@ -5,22 +5,21 @@ on:
     inputs:
       kernel_sublevel:
         type: string
-        required: true
-        
+        required: false
+        default: "102"
+
       os_patch_level:
-        type: choice
-          options:
-            - "2025-09"
-            - "2025-10"
-          default: "2025-10"
+        type: string
+        required: false
+        default: "2025-10"
 
       ksu_variant:
-        required: true
         type: string
+        required: true
 
       require_susfs:
-        required: true
         type: boolean
+        required: true
 
 jobs:
   build-a15-6-6:
