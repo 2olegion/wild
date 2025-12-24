@@ -1,8 +1,4 @@
-name: Kernel Config - Custom
-
-permissions:
-  contents: write
-  actions: write
+name: Build Kernel (Android 15 • 6.6)
 
 on:
   workflow_call:
