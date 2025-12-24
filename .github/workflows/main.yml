@@ -28,9 +28,9 @@ on:
         
 
 jobs:
-  build-6-6:
+  build:
     uses: ./.github/workflows/kernel-a15-6-6.yml
     with:
+      kernel_sublevel: ${{ inputs.kernel_sublevel }}
       ksu_variant: ${{ inputs.ksu_variant }}
       require_susfs: ${{ inputs.require_susfs }}
-
