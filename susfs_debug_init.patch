@@ -1,16 +1,15 @@
-- name: Create SUSFS debug patch (raw)
-  run: |
-    cat > "$GITHUB_WORKSPACE/susfs_debug_init.patch" <<'EOF'
 diff --git a/fs/namei.c b/fs/namei.c
+index 9b3c9f2a2d8d..c4f8b6d2a1aa 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@
- int do_mount(const char *dev_name, const char *dir_name,
-              const char *type_page, unsigned long flags,
-              void *data_page)
- {
+@@ -4300,6 +4300,10 @@ int do_mount(const char *dev_name, const char *dir_name,
+ 		return -EPERM;
+ 	}
+
 +#ifdef CONFIG_SUSFS
 +	pr_info("SUSFS_DEBUG: do_mount() reached\n");
 +#endif
- 	int ret;
-EOF
++
+ 	ret = do_new_mount(&path, type_page, flags, data_page);
+ 	if (ret)
+ 		goto out;
