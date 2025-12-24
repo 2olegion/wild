@@ -270,6 +270,23 @@ jobs:
 # SUSFS integration (Android 15 / GKI 6.6)
 # =========================================================
 
+    - name: Apply SUSFS base.c compatibility fix
+      working-directory: ${{ env.KERNEL_ROOT }}/common
+      run: |
+       set -e
+       FIX="$KERNEL_PATCHES/wild/susfs_fix_patches/v2.0.0/1_fix_base.c.patch"
+  
+        if [ ! -f "$FIX" ]; then
+          echo "❌ Missing base.c fix patch: $FIX"
+          exit 1
+        fi
+  
+        echo "==> Applying fs/proc/base.c fix"
+        patch -p1 < "$FIX"
+    
+        rm -f fs/proc/base.c.rej
+
+
     - name: Apply SUSFS core patch
       working-directory: ${{ env.KERNEL_ROOT }}/common
       run: |
