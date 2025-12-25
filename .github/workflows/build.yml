@@ -350,6 +350,13 @@ jobs:
           }
           apply_optional "$FIX/fix_task_mmu.c.patch"
           apply_optional "$FIX/1_fix_base.c.patch"
+          
+          # Apply Android 15 / GKI 6.6 compatibility fix
+          if [[ "${{ inputs.android_version }}" == "android15" && "${{ inputs.kernel_version }}" == "6.6" ]]; then
+            echo "==> Applying Android 15 SUSFS procfs compatibility fix"
+            apply_optional "$GITHUB_WORKSPACE/susfs_a15_procfs_fix.patch"
+          fi
+          
           rm -f fs/proc/*.rej
 
       - name: Apply Hooks Patches
